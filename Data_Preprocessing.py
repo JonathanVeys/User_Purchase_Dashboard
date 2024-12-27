@@ -38,5 +38,24 @@ columns_to_scale = ['tenure', 'MonthlyCharges', 'TotalCharges']
 scaler = MinMaxScaler()
 data[columns_to_scale] = scaler.fit_transform(data[columns_to_scale])
 
-print_unique_col_values(data)
-print(data.sample(5))
+from sklearn.utils import resample
+import pandas as pd
+
+# Separate the majority and minority classes
+churn_yes = data[data['Churn'] == 1]
+churn_no = data[data['Churn'] == 0]
+
+# Oversample the minority class
+churn_yes_oversampled = resample(churn_yes,
+                                 replace=True,  # Sample with replacement
+                                 n_samples=len(churn_no),  # Match number of majority samples
+                                 random_state=42)  # Reproducibility
+
+# Combine majority class with oversampled minority class
+balanced_data = pd.concat([churn_no, churn_yes_oversampled])
+
+# Shuffle the dataset
+balanced_data = balanced_data.sample(frac=1, random_state=42).reset_index(drop=True)
+
+
+balanced_data.to_csv('/Users/jonathancrocker/Documents/VSCode/Code/Pytorch/User Recommendataion NN/Dataset/Processesed-Churn-Data.csv', index=False)
